@@ -1,0 +1,24 @@
+﻿
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\api\analyze\route.ts
+  57:64  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  70:15  warning  'historicalContext' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\auth\admin-login\page.tsx
+   5:10  warning  'LogIn' is defined but never used         @typescript-eslint/no-unused-vars
+  30:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\auth\login\page.tsx
+  36:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\auth\register\page.tsx
+  26:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\dashboard\page.tsx
+  10:5  warning  'Calendar' is defined but never used  @typescript-eslint/no-unused-vars
+  12:8  warning  'Link' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\page.tsx
+  133:28  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+Ô£û 9 problems (5 errors, 4 warnings)
+

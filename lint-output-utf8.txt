@@ -1,0 +1,16 @@
+﻿
+> my-app@0.1.0 lint
+> eslint
+
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\admin\page.tsx
+  89:33  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\LENOVO\Downloads\Thoonganagaram-ai\src\app\dashboard\page.tsx
+   8:12   warning  'MapIcon' is defined but never used                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  15:58   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  82:41   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  92:130  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+
+Ô£û 5 problems (2 errors, 3 warnings)
+

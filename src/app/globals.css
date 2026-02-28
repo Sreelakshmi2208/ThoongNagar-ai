@@ -1,26 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary-green: #00F260;
+  --color-primary-blue: #0575E6;
+  --color-warning-amber: #FFB300;
+  --color-risk-red: #FF416C;
+  --color-background-dark: #0a0e17;
+  --color-background-mid: #0d131f;
+  --color-background-light: #162032;
+  --font-sans: var(--font-inter);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* Custom Glassmorphism Utilities */
+@layer utilities {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_8px_32px_0_#1f26875e];
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  .glass-button {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300 rounded-xl hover:shadow-[0_0_20px_#ffffff1a];
+  }
+
+  .glow-green {
+    @apply shadow-[0_0_25px_#00f26080];
+  }
+
+  .glow-blue {
+    @apply shadow-[0_0_25px_#0575e680];
+  }
+
+  .glow-red {
+    @apply shadow-[0_0_25px_#ff416c80];
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
   }
 }
 
+:root {
+  --background: #0a0e17;
+  --foreground: #f8fafc;
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(circle at top right, var(--color-background-light), var(--color-background-dark));
+  background-attachment: fixed;
+  font-family: var(--font-sans), sans-serif;
+  min-height: 100vh;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
