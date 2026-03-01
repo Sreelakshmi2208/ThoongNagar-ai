@@ -6,10 +6,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
-import { Trophy, Star, Shield, ArrowLeft, Loader2, Sparkles, MapPin } from "lucide-react";
+import { Trophy, Star, Shield, ArrowLeft, Loader2, Sparkles, MapPin, LogOut } from "lucide-react";
 
 export default function ProfilePage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, logout } = useAuth();
     const router = useRouter();
     const [reportCount, setReportCount] = useState(0);
     const [loadingData, setLoadingData] = useState(true);
@@ -67,6 +67,12 @@ export default function ProfilePage() {
                     </h1>
                     <p className="text-gray-400 mt-1">Track your contribution to Madurai's Cleanliness Revolution</p>
                 </div>
+                <button
+                    onClick={logout}
+                    className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-risk-red/10 text-risk-red hover:bg-risk-red text-sm font-bold transition-all border border-risk-red/20"
+                >
+                    <LogOut className="w-4 h-4" /> Sign Out
+                </button>
             </header>
 
             <motion.div

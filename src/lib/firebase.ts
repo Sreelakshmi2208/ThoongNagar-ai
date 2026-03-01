@@ -16,4 +16,17 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
+// Enable offline persistence for better resilience
+if (typeof window !== "undefined") {
+    import("firebase/firestore").then(({ enableIndexedDbPersistence }) => {
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.warn("Persistence failed: Multiple tabs open");
+            } else if (err.code === 'unimplemented') {
+                console.warn("Persistence is not supported by the browser");
+            }
+        });
+    });
+}
+
 export { app, auth, storage, db };

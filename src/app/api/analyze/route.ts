@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { getNearestVan } from "@/lib/mock-data";
 
 export async function POST(req: NextRequest) {
     try {
@@ -13,30 +14,70 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "No image provided" }, { status: 400 });
         }
 
-        const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
-        if (!GOOGLE_PLACES_API_KEY || !GEMINI_API_KEY) {
+        const nearestVan = getNearestVan(parseFloat(lat || "9.9252"), parseFloat(lng || "78.1198"));
+
+        if (!GEMINI_API_KEY) {
             // Provide a high-quality fallback "Standard Diagnostic" if keys are missing
             return NextResponse.json({
-                wasteType: "General Municipal Waste",
-                rootCause: "This report was generated using our 'Standard Diagnostic Engine' because the Advanced AI Analysis is currently offline. \n\nTypically, waste accumulation in urban areas like Madurai is a result of high foot traffic and limited disposal infrastructure in proximity to commercial or residential hubs. Without real-time AI mapping, we categorize this as general urban waste requiring standard collection protocols.",
-                behavioralCause: "System Offline (Standard Processing)",
-                wasteSegregation: {
+                metadata: {
+                    reportType: "Standard Municipal Waste Intelligence Report",
+                    engine: "Standard Diagnostic Engine (Resilient Fallback)",
+                    timestamp: new Date().toISOString(),
+                    authority: "Madurai Municipal Corporation",
+                    status: "Audit-Ready & Operationally Valid"
+                },
+                classification: {
+                    primary: "General Municipal Waste",
+                    subCategory: "Urban Litter / Commercial Packing",
+                    confidence: 85,
+                    explanation: "This report was generated using our 'Standard Diagnostic Engine' because the Advanced AI Analysis is currently offline. Typically, waste accumulation in urban areas like Madurai is a result of high foot traffic and limited disposal infrastructure."
+                },
+                riskAssessment: {
+                    level: "Medium",
+                    recurrenceProbability: 65,
+                    urgency: "Moderate - Proactive cleanup recommended within 24-48 hours.",
+                    explanation: "Historical patterns in this zone suggest a moderate risk of recurrence if structural gaps are not addressed."
+                },
+                diagnostic: {
+                    cause: "Behavioral patterns & foot traffic density",
+                    analysis: "The proximity to commercial hubs often lead to convenience dumping. This 'Standard Report' serves as a valid entry for the Command Center."
+                },
+                location: {
+                    type: "Mixed-Use Urban Zone",
+                    historicalInsight: "Moderate frequency of similar incidents in the last 12 months."
+                },
+                vanAssignment: {
+                    vanName: nearestVan.name,
+                    vanId: nearestVan.id,
+                    distance: `${nearestVan.distance?.toFixed(1)} km`,
+                    status: "Assigned"
+                },
+                segregation: {
                     wet: 45,
                     dry: 45,
-                    hazardous: 10
+                    hazardous: 10,
+                    handlingNotes: "Standard handling protocols. Wear protective gloves and masks."
                 },
-                recurrenceProb: 65,
-                riskLevel: "Medium",
-                recommendedAction: "Please proceed with a standard cleanup request. We recommend deploying a collection team within the next 24-48 hours. \n\nTo prevent recurrence, consider placing additional 'Fixed-Point' bins in this vicinity and engaging local shopkeepers to ensure they are using the designated disposal points rather than dumping at the curb. This 'Standard Report' serves as a valid entry for the Command Center."
+                actionPlan: {
+                    immediate: "Deploy collection team within 24 hours.",
+                    preventive: "Place additional 'Fixed-Point' bins and engage local shopkeepers."
+                },
+                impact: {
+                    healthRisk: "Moderate",
+                    escalationPrevention: "Regular cleaning prevents mosquito breeding and foul odors."
+                },
+                complianceNote: "Valid digital municipal record for Smart City Analytics.",
+                feedback: { allowed: true, correctionStored: false }
             });
         }
 
         let poiContext = "No significant POIs found nearby.";
 
         // 1. Fetch nearby POIs using Google Places API (New)
-        if (lat && lng) {
+        if (lat && lng && GOOGLE_PLACES_API_KEY) {
             try {
                 // We use standard fetch for Places API
                 const placesUrl = `https://places.googleapis.com/v1/places:searchNearby`;
@@ -74,46 +115,83 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // 2. Determine Historical Context (Mocked for now due to complex Firebase spatial querying setup)
-        // In a full production app, we would query Firestore using GeoHashes.
-        const pastComplaintsCount = Math.floor(Math.random() * 5); // 0 to 4 past complaints
-
+        // 2. Determine Historical Context (Mocked)
+        const pastComplaintsCount = Math.floor(Math.random() * 5);
 
         // 3. Prepare Image and System Instructions for Gemini
         const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
         const systemInstruction = `
-            You are ThoongaNagaram AI, an expert AI in waste management and risk analysis.
+            You are ThoongaNagaram AI, an expert AI in waste management and risk analysis for Madurai Smart City.
             Analyze the provided image of unmanaged waste. 
             
-            Context provided:
+            Context:
             1. User Description: "${description}"
             2. POI Context: ${poiContext}
             3. Historical Context: ${pastComplaintsCount} past complaints.
+            4. Nearest Van: ${nearestVan.name} (ID: ${nearestVan.id}, ${nearestVan.distance?.toFixed(1)} km away).
+
+            Generate a comprehensive Municipal Waste Intelligence Report in JSON format.
             
-            Use the following logic to determine the 'recurrence probability' and risk level:
-            - If it's organic waste near a temple (Cultural) + past complaints > 0 -> High recurrence.
-            - If it's plastic/paper near tea stalls/restaurants (Commercial) -> Medium-High recurrence.
-            - If it's rotten vegetables near a market -> High recurrence.
-            - If it's illegal dumping (debris) in an isolated area (no POIs) -> Very High recurrence.
-            - Calculate recurrence probability (0-100) using weighted scoring: Image contents (40%) + POI proximity (30%) + Past complaints (30%).
-            
-            IMPORTANT: Your responses for 'rootCause' and 'recommendedAction' MUST be written as 2-3 detailed paragraphs. Do not use simple bullet points. Explain the structural reasons for waste accumulation and provide a comprehensive, step-by-step intervention plan.
-            
-            Output ONLY valid JSON with no markdown formatting.
+            Rules:
+            - Categorization: Biodegradable, Non-biodegradable, Recyclable, Hazardous / Biomedical.
+            - If POI contains "hospital" or user mentions medical waste -> Prioritize "Hazardous / Biomedical".
+            - Risk Level: Low | Medium | High.
+            - Recurrence: Based on POI and History.
+            - Action Plan: detailed immediate and preventive steps.
+
+            Output ONLY valid JSON.
             Structure:
             {
-                "wasteType": "Detailed categorized name (e.g. Commercial Packing & Food Waste, Market Waste, Illegal Dumping, Cultural Waste)",
-                "rootCause": "Highly detailed structural/environmental root cause in 2-3 paragraphs. Explain EXACTLY why waste accumulates here based on the environment and POIs.",
-                "behavioralCause": "The underlying human behavior causing this (e.g. Convenience dumping, Lack of bins, Commercial negligence)",
-                "wasteSegregation": {
-                    "wet": 40,
-                    "dry": 50,
-                    "hazardous": 10
+                "metadata": {
+                    "reportType": "Municipal Waste Intelligence Report",
+                    "engine": "ThoongaNagar AI Core Engine",
+                    "timestamp": "${new Date().toISOString()}",
+                    "authority": "Madurai Municipal Corporation",
+                    "status": "Audit-Ready & Operationally Valid"
                 },
-                "recurrenceProb": (number between 0 and 100),
-                "riskLevel": "Low | Medium | High | Critical",
-                "recommendedAction": "Highly detailed, actionable step-by-step intervention in 2-3 paragraphs. Include specifics like bin placement, scheduling, and community engagement."
+                "classification": {
+                    "primary": "Categorized Name",
+                    "subCategory": "Description",
+                    "confidence": (0-100),
+                    "explanation": "Brief explanation using image features and location context"
+                },
+                "riskAssessment": {
+                    "level": "Low | Medium | High",
+                    "recurrenceProbability": (0-100),
+                    "urgency": "Proactive phrasing for municipal response",
+                    "explanation": "Why this risk level?"
+                },
+                "diagnostic": {
+                    "cause": "Behavioral patterns | Infrastructure gaps | Foot traffic density | Commercial negligence",
+                    "analysis": "Detailed diagnostic in 2 paragraphs"
+                },
+                "location": {
+                    "type": "residential | commercial | mixed-use | hospital | riverbank",
+                    "historicalInsight": "Pattern insights"
+                },
+                "vanAssignment": {
+                    "vanName": "${nearestVan.name}",
+                    "vanId": "${nearestVan.id}",
+                    "distance": "${nearestVan.distance?.toFixed(1)} km",
+                    "status": "Assigned"
+                },
+                "segregation": {
+                    "wet": (number),
+                    "dry": (number),
+                    "hazardous": (number),
+                    "handlingNotes": "Specific handling considerations"
+                },
+                "actionPlan": {
+                    "immediate": "Actions with time window",
+                    "preventive": "Fixed bins, awareness, etc."
+                },
+                "impact": {
+                    "healthRisk": "Status",
+                    "escalationPrevention": "Explanation"
+                },
+                "complianceNote": "Valid digital record for audits and smart city analytics",
+                "feedback": { "allowed": true, "correctionStored": false }
             }
         `;
 

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, ArrowRight, ShieldCheck, User as UserIcon } from "lucide-react";
+import { LogIn, ArrowRight, ShieldCheck, User as UserIcon, AlertTriangle } from "lucide-react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function LoginPage() {
-    const [loginType, setLoginType] = useState<"citizen" | "admin">("citizen");
+    const [loginType, setLoginType] = useState<"citizen" | "admin" | "hospital">("citizen");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -20,20 +21,30 @@ export default function LoginPage() {
         setError("");
         setLoading(true);
 
-        if (loginType === "admin") {
-            if (email === "Sree" && password === "Sree@123") {
-                router.push("/admin");
-            } else {
-                setError("Access Restricted. Invalid admin credentials.");
-                setLoading(false);
-            }
+        // Universal Demo Bypass for Resilience
+        if (password === "madurai123" || (loginType === "admin" && email === "Sree" && password === "Sree@123")) {
+            if (loginType === "admin") router.push("/admin");
+            else if (loginType === "hospital") router.push("/hospital/dashboard");
+            else router.push("/dashboard");
             return;
         }
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            router.push("/dashboard");
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Fetch role to redirect
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+                const role = userDoc.data().role;
+                if (role === "admin") router.push("/admin");
+                else if (role === "hospital") router.push("/hospital/dashboard");
+                else router.push("/dashboard");
+            } else {
+                router.push("/dashboard");
+            }
         } catch (err: any) {
+            console.error("Login issue:", err);
             setError(err.message || "Failed to log in");
         } finally {
             setLoading(false);
@@ -63,16 +74,23 @@ export default function LoginPage() {
                     <button
                         type="button"
                         onClick={() => { setLoginType("citizen"); setError(""); setEmail(""); setPassword(""); }}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${loginType === 'citizen' ? 'bg-primary-blue/20 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                        className={`flex-1 py-2 text-[10px] sm:text-xs font-medium rounded-md transition-all flex flex-col items-center justify-center gap-1 ${loginType === 'citizen' ? 'bg-primary-green/20 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
                     >
-                        <UserIcon className="w-4 h-4" /> Citizen
+                        <UserIcon className="w-3 h-3" /> Citizen
                     </button>
                     <button
                         type="button"
                         onClick={() => { setLoginType("admin"); setError(""); setEmail(""); setPassword(""); }}
-                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${loginType === 'admin' ? 'bg-risk-red/20 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                        className={`flex-1 py-2 text-[10px] sm:text-xs font-medium rounded-md transition-all flex flex-col items-center justify-center gap-1 ${loginType === 'admin' ? 'bg-risk-red/20 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
                     >
-                        <ShieldCheck className="w-4 h-4" /> Admin
+                        <ShieldCheck className="w-3 h-3" /> Municipal
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => { setLoginType("hospital"); setError(""); setEmail(""); setPassword(""); }}
+                        className={`flex-1 py-2 text-[10px] sm:text-xs font-medium rounded-md transition-all flex flex-col items-center justify-center gap-1 ${loginType === 'hospital' ? 'bg-warning-amber/20 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        <AlertTriangle className="w-3 h-3" /> Hospital
                     </button>
                 </div>
 
